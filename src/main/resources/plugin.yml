@@ -1,0 +1,3 @@
+name: PumpkinPVP
+version: '${version}'
+main: org.au2b2t.pumpkinpvp.PumpkinPVP

@@ -71,10 +71,11 @@ public final class PumpkinPVP extends JavaPlugin implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void on(PumpkinDamageEvent e) {
+    public void on(EntityDamageByBlockEvent e) {
         if (e.getEntity() instanceof Player) {
             final Player player = (Player) e.getEntity();
             if (e.getCause() == EntityDamageEvent.DamageCause.BLOCK_EXPLOSION) {
+//                getLogger().info(String.format("cancelled=%s", isSurrounded(player)));
                 e.setCancelled(isSurrounded(player));
             }
         }
@@ -91,32 +92,13 @@ public final class PumpkinPVP extends JavaPlugin implements Listener {
     }
 
     private boolean isSurrounded(final Player player) {
-        final Location loc = player.getLocation().add(0,1,0); // gets the block they're standing on plus 1
-        final Block block1 = loc.add(0,1,0).getBlock(); // gets the block at players face
-        final Block block2 = loc.getBlock();
+        BlockFace[] faces = {BlockFace.EAST, BlockFace.WEST, BlockFace.NORTH, BlockFace.SOUTH};
+        Block current = player.getLocation().add(0,1,0).getBlock(); // gets the block they're standing on plus 1
+        for(BlockFace face:faces)
+            if(current.getRelative(face).getType() == Material.AIR && current.getRelative(face).getRelative(BlockFace.UP).getType() == Material.AIR)
+                return false;  //not surrounded
 
-        for (BlockFace face : new BlockFace[]{ BlockFace.EAST, BlockFace.WEST, BlockFace.NORTH, BlockFace.SOUTH }) {
-            if (block1.getRelative(face).getType() == Material.PUMPKIN ||
-                block2.getRelative(face).getType() == Material.PUMPKIN
-            ) {
-                getLogger().info(String.format("false={face=%s block1=%s block2=%s}",
-                        face,
-                        block1.getRelative(face).getType(),
-                        block2.getRelative(face).getType()));
-                return false; // can do damage
-            }
-            if (block1.getRelative(face).getType() != Material.AIR &&
-                block2.getRelative(face).getType() != Material.AIR
-            ) {
-                getLogger().info(String.format("true={face=%s block1=%s block2=%s}",
-                        face,
-                        block1.getRelative(face).getType(),
-                        block2.getRelative(face).getType()));
-                return true; // surrounded
-            }
-        }
-
-        return false;
+        return true;  //is surrounded
     }
 
     private void createExplosion(final Block block, final Player placer) {
